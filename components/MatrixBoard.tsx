@@ -10,7 +10,9 @@ interface MatrixBoardProps {
   onTaskClick: (task: Task) => void;
   onTaskComplete: (taskId: string) => void;
   onAddTask: (quadrant: Quadrant) => void;
+  className?: string;
 }
+
 
 const QUADRANTS: { quadrant: Quadrant; label: string; descriptor: string }[] = [
   { quadrant: 'Q1', label: 'Do First', descriptor: 'Important + Urgent' },
@@ -25,6 +27,7 @@ export default function MatrixBoard({
   onTaskClick,
   onTaskComplete,
   onAddTask,
+  className = '',
 }: MatrixBoardProps) {
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
@@ -46,7 +49,7 @@ export default function MatrixBoard({
 
   return (
     <DndContext sensors={sensors} onDragEnd={handleDragEnd}>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4" style={{ gridAutoRows: '1fr' }}>
+      <div className={`grid grid-cols-1 md:grid-cols-2 gap-4 h-full ${className}`} style={{ gridAutoRows: '1fr' }}>
         {QUADRANTS.map(({ quadrant, label, descriptor }) => (
           <QuadrantPanel
             key={quadrant}

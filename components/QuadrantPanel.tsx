@@ -60,15 +60,21 @@ export default function QuadrantPanel({
           +
         </button>
       </div>
-      <div className="flex flex-col gap-2 p-3 flex-1">
+      <div
+        className="flex flex-col gap-2 p-3 flex-1 cursor-pointer"
+        onClick={() => onAddTask(quadrant)}
+      >
         {tasks.map((task) => (
           <TaskCard
             key={task.id}
             task={task}
-            onTaskClick={onTaskClick}
+            onTaskClick={(t) => { onTaskClick(t); }}
             onTaskComplete={onTaskComplete}
           />
         ))}
+        {tasks.length === 0 && (
+          <p className="text-xs opacity-40 text-center mt-4 select-none">Click to add a task</p>
+        )}
       </div>
     </div>
   );

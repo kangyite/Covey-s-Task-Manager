@@ -25,6 +25,7 @@ export default function TaskCard({ task, onTaskClick, onTaskComplete }: TaskCard
       ref={setNodeRef}
       {...listeners}
       {...attributes}
+      onClick={(e) => e.stopPropagation()}
       className={`flex items-start justify-between gap-2 rounded-md border bg-white px-3 py-2 shadow-sm cursor-grab transition-all ${
         isDragging ? 'opacity-50 shadow-lg ring-2 ring-indigo-400' : 'hover:shadow-md'
       }`}

@@ -39,6 +39,7 @@ export default function MatrixPage() {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [loading, setLoading] = useState(true);
   const [toasts, setToasts] = useState<Toast[]>([]);
+  const hasFetched = useRef(false);
 
   // Modal state
   const [modalOpen, setModalOpen] = useState(false);
@@ -86,17 +87,22 @@ export default function MatrixPage() {
     let cancelled = false;
 
     async function init() {
+      // Don't show skeleton on re-visits if we already have tasks
+      if (!hasFetched.current) {
+        setLoading(true);
+      }
       try {
         const res = await fetch('/api/tasks');
         if (!res.ok) {
           showError('Failed to load tasks. Please refresh the page.');
+          setLoading(false);
           return;
         }
         const data: { tasks: Task[] } = await res.json();
         if (!cancelled) {
           setTasks(data.tasks);
           setLoading(false);
-          // Run escalation after initial load
+          hasFetched.current = true;
           runEscalation(data.tasks);
         }
       } catch {
@@ -250,7 +256,7 @@ export default function MatrixPage() {
       </header>
 
       {/* Matrix */}
-      <main className="flex-1 p-4 md:p-6">
+      <main className="flex-1 flex flex-col p-4 md:p-6 min-h-0">
         {loading ? (
           <MatrixSkeleton />
         ) : (
@@ -260,6 +266,7 @@ export default function MatrixPage() {
             onTaskClick={handleTaskClick}
             onTaskComplete={handleTaskComplete}
             onAddTask={handleAddTaskInQuadrant}
+            className="flex-1 h-full"
           />
         )}
       </main>

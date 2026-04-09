@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, FormEvent } from 'react';
+import { useState, useEffect, useRef, FormEvent } from 'react';
 import type { Task, Quadrant } from '@/lib/types';
 import { validateTaskInput } from '@/lib/validation';
 
@@ -42,6 +42,7 @@ export default function TaskFormModal({ task, defaultQuadrant, onSubmit, onClose
   const [urgencyThresholdDays, setUrgencyThresholdDays] = useState('');
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [submitting, setSubmitting] = useState(false);
+  const titleRef = useRef<HTMLInputElement>(null);
 
   // Pre-populate fields when editing
   useEffect(() => {
@@ -59,6 +60,8 @@ export default function TaskFormModal({ task, defaultQuadrant, onSubmit, onClose
       setUrgencyThresholdDays('');
     }
     setErrors({});
+    // Autofocus title after state settles
+    setTimeout(() => titleRef.current?.focus(), 50);
   }, [task, isOpen]);
 
   // When deadline is cleared, also clear urgency threshold
@@ -126,6 +129,7 @@ export default function TaskFormModal({ task, defaultQuadrant, onSubmit, onClose
             </label>
             <input
               id="task-title"
+              ref={titleRef}
               type="text"
               value={title}
               onChange={(e) => setTitle(e.target.value)}

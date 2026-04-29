@@ -79,17 +79,12 @@ export async function PATCH(request: NextRequest, { params }: RouteContext) {
     try {
       const { data: profile } = await supabase
         .from('profiles')
-        .select('calendar_enabled')
+        .select('calendar_enabled, provider_token')
         .eq('id', user.id)
         .single();
 
-      if (profile?.calendar_enabled) {
-        const { data: { session } } = await supabase.auth.getSession();
-        const accessToken = session?.provider_token;
-
-        if (accessToken) {
-          await updateCalendarEvent(accessToken, effectiveEventId, effectiveTitle, effectiveDeadline);
-        }
+      if (profile?.calendar_enabled && profile?.provider_token) {
+        await updateCalendarEvent(profile.provider_token, effectiveEventId, effectiveTitle, effectiveDeadline);
       }
     } catch (calendarError) {
       console.error('Calendar sync error on task update:', calendarError);
@@ -124,17 +119,12 @@ export async function DELETE(_request: NextRequest, { params }: RouteContext) {
     try {
       const { data: profile } = await supabase
         .from('profiles')
-        .select('calendar_enabled')
+        .select('calendar_enabled, provider_token')
         .eq('id', user.id)
         .single();
 
-      if (profile?.calendar_enabled) {
-        const { data: { session } } = await supabase.auth.getSession();
-        const accessToken = session?.provider_token;
-
-        if (accessToken) {
-          await deleteCalendarEvent(accessToken, existing.calendar_event_id as string);
-        }
+      if (profile?.calendar_enabled && profile?.provider_token) {
+        await deleteCalendarEvent(profile.provider_token, existing.calendar_event_id as string);
       }
     } catch (calendarError) {
       console.error('Calendar sync error on task delete:', calendarError);

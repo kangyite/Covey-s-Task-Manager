@@ -4,6 +4,7 @@ import { useEffect, useRef, useState, useCallback } from 'react';
 import type { Task, Quadrant } from '@/lib/types';
 import MatrixBoard from '@/components/MatrixBoard';
 import TaskFormModal, { TaskFormData } from '@/components/TaskFormModal';
+import AiTaskInput from '@/components/AiTaskInput';
 
 // ─── Toast ────────────────────────────────────────────────────────────────────
 
@@ -45,6 +46,7 @@ export default function MatrixPage() {
   const [modalOpen, setModalOpen] = useState(false);
   const [editingTask, setEditingTask] = useState<Task | undefined>(undefined);
   const [defaultQuadrant, setDefaultQuadrant] = useState<Quadrant | undefined>(undefined);
+  const [aiPrefill, setAiPrefill] = useState<TaskFormData | undefined>(undefined);
 
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
@@ -202,6 +204,17 @@ export default function MatrixPage() {
     setModalOpen(true);
   }
 
+  // ── AI task parsed ───────────────────────────────────────────────────────
+
+  async function handleAiTaskParsed(data: TaskFormData) {
+    // Open the modal pre-populated with AI-parsed data for user to review/confirm
+    setEditingTask(undefined);
+    setDefaultQuadrant(data.quadrant);
+    // Pre-fill modal by temporarily storing AI data — submit will create the task
+    setAiPrefill(data);
+    setModalOpen(true);
+  }
+
   // ── Modal submit ──────────────────────────────────────────────────────────
 
   async function handleModalSubmit(data: TaskFormData) {
@@ -301,10 +314,14 @@ export default function MatrixPage() {
         isOpen={modalOpen}
         task={editingTask}
         defaultQuadrant={defaultQuadrant}
+        prefill={aiPrefill}
         onSubmit={handleModalSubmit}
         onDelete={editingTask ? handleTaskDelete : undefined}
-        onClose={() => setModalOpen(false)}
+        onClose={() => { setModalOpen(false); setAiPrefill(undefined); }}
       />
+
+      {/* AI floating input */}
+      <AiTaskInput onTaskParsed={handleAiTaskParsed} />
     </div>
   );
 }

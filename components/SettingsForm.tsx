@@ -16,24 +16,21 @@ export default function SettingsForm({ settings, onUpdate }: SettingsFormProps) 
     setLoading(true);
     try {
       if (!settings.calendar_enabled) {
-        // Enabling: request Google Calendar OAuth scope first
+        // Enabling: request Google Calendar OAuth scope.
+        // Pass next=/settings?calendar_enabled=1 so the callback can enable it after redirect.
         const supabase = createClient();
         await supabase.auth.signInWithOAuth({
           provider: 'google',
           options: {
             scopes: 'https://www.googleapis.com/auth/calendar.events',
+            redirectTo: `${window.location.origin}/auth/callback?next=/settings%3Fcalendar_enabled%3D1`,
+            queryParams: {
+              access_type: 'offline',
+              prompt: 'consent',
+            },
           },
         });
-        // After OAuth redirect, persist the setting
-        const res = await fetch('/api/settings', {
-          method: 'PATCH',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ calendar_enabled: true }),
-        });
-        if (res.ok) {
-          const { settings: updated } = await res.json();
-          onUpdate(updated);
-        }
+        // The page will redirect — code below won't run
       } else {
         // Disabling: update setting then notify parent
         const res = await fetch('/api/settings', {

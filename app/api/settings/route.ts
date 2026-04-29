@@ -78,9 +78,13 @@ export async function PATCH(request: NextRequest) {
         .not('calendar_event_id', 'is', null);
 
       if (tasksWithEvents && tasksWithEvents.length > 0) {
-        // Get the provider token for Calendar API calls
-        const { data: { session } } = await supabase.auth.getSession();
-        const accessToken = session?.provider_token;
+        // Get the provider token from the profile
+        const { data: profileWithToken } = await supabase
+          .from('profiles')
+          .select('provider_token')
+          .eq('id', user.id)
+          .single();
+        const accessToken = profileWithToken?.provider_token;
 
         // Delete each calendar event, catching errors per event
         if (accessToken) {

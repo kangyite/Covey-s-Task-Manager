@@ -60,17 +60,12 @@ export async function POST(_request: NextRequest, { params }: RouteContext) {
     try {
       const { data: profile } = await supabase
         .from('profiles')
-        .select('calendar_enabled')
+        .select('calendar_enabled, provider_token')
         .eq('id', user.id)
         .single();
 
-      if (profile?.calendar_enabled) {
-        const { data: { session } } = await supabase.auth.getSession();
-        const accessToken = session?.provider_token;
-
-        if (accessToken) {
-          await deleteCalendarEvent(accessToken, task.calendar_event_id as string);
-        }
+      if (profile?.calendar_enabled && profile?.provider_token) {
+        await deleteCalendarEvent(profile.provider_token, task.calendar_event_id as string);
       }
     } catch (calendarError) {
       console.error('Calendar sync error on task complete:', calendarError);

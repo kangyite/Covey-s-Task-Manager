@@ -5,7 +5,7 @@
 create table public.profiles (
   id                uuid primary key references auth.users(id) on delete cascade,
   calendar_enabled  boolean not null default false,
-  calendar_token    text,
+  provider_token    text,
   created_at        timestamptz not null default now()
 );
 

@@ -71,16 +71,18 @@ export async function POST(request: NextRequest) {
     try {
       const { data: profile } = await supabase
         .from('profiles')
-        .select('calendar_enabled')
+        .select('calendar_enabled, provider_token')
         .eq('id', user.id)
         .single();
 
-      if (profile?.calendar_enabled) {
-        const { data: { session } } = await supabase.auth.getSession();
-        const accessToken = session?.provider_token;
+      console.log('[tasks POST] calendar check:', {
+        hasDeadline: !!createdTask.deadline,
+        calendar_enabled: profile?.calendar_enabled,
+        has_provider_token: !!profile?.provider_token,
+      });
 
-        if (accessToken) {
-          const eventId = await createCalendarEvent(accessToken, createdTask.title, createdTask.deadline);
+      if (profile?.calendar_enabled && profile?.provider_token) {
+        const eventId = await createCalendarEvent(profile.provider_token, createdTask.title, createdTask.deadline);
 
           const { data: updatedTask } = await supabase
             .from('tasks')
@@ -92,7 +94,6 @@ export async function POST(request: NextRequest) {
           if (updatedTask) {
             createdTask = updatedTask as Task;
           }
-        }
       }
     } catch (calendarError) {
       console.error('Calendar sync error on task create:', calendarError);

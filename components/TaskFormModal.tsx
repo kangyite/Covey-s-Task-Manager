@@ -15,6 +15,7 @@ export interface TaskFormData {
 interface TaskFormModalProps {
   task?: Task;
   defaultQuadrant?: Quadrant;
+  prefill?: TaskFormData;
   onSubmit: (data: TaskFormData) => Promise<void>;
   onClose: () => void;
   onDelete?: (taskId: string) => Promise<void>;
@@ -34,7 +35,7 @@ function toDatetimeLocalValue(iso?: string): string {
   return iso.slice(0, 16);
 }
 
-export default function TaskFormModal({ task, defaultQuadrant, onSubmit, onClose, onDelete, isOpen }: TaskFormModalProps) {
+export default function TaskFormModal({ task, defaultQuadrant, prefill, onSubmit, onClose, onDelete, isOpen }: TaskFormModalProps) {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [quadrant, setQuadrant] = useState<Quadrant>('Q1');
@@ -44,7 +45,7 @@ export default function TaskFormModal({ task, defaultQuadrant, onSubmit, onClose
   const [submitting, setSubmitting] = useState(false);
   const titleRef = useRef<HTMLInputElement>(null);
 
-  // Pre-populate fields when editing
+  // Pre-populate fields when editing or from AI prefill
   useEffect(() => {
     if (task) {
       setTitle(task.title);
@@ -52,6 +53,12 @@ export default function TaskFormModal({ task, defaultQuadrant, onSubmit, onClose
       setQuadrant(task.quadrant);
       setDeadline(toDatetimeLocalValue(task.deadline));
       setUrgencyThresholdDays(task.urgency_threshold_days?.toString() ?? '');
+    } else if (prefill) {
+      setTitle(prefill.title ?? '');
+      setDescription(prefill.description ?? '');
+      setQuadrant(prefill.quadrant ?? defaultQuadrant ?? 'Q1');
+      setDeadline(toDatetimeLocalValue(prefill.deadline));
+      setUrgencyThresholdDays(prefill.urgency_threshold_days?.toString() ?? '');
     } else {
       setTitle('');
       setDescription('');
